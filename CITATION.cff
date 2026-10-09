@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it as below."
+title: "learner-analytics: knowledge tracing and dropout-risk analytics for course logs"
+type: software
+authors:
+  - alias: borzki
+version: 0.1.0
+date-released: 2026-10-10
+license: MIT
+repository-code: "https://github.com/borzki/learner-analytics"
+keywords:
+  - learning analytics
+  - Bayesian knowledge tracing
+  - personalised learning
+  - dropout prediction
+references:
+  - type: article
+    title: "Knowledge tracing: Modeling the acquisition of procedural knowledge"
+    authors:
+      - family-names: Corbett
+        given-names: Albert T.
+      - family-names: Anderson
+        given-names: John R.
+    journal: "User Modeling and User-Adapted Interaction"
+    volume: 4
+    year: 1994
+    start: 253
+    end: 278
