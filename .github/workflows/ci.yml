@@ -1,0 +1,122 @@
+# CI/CD pipeline for learner-analytics.
+#   CI : every push and pull request -> lint -> tests on 3 OS x 3 Python versions -> build + demo
+#   CD : pushing a version tag (v*) -> the built package is attached to a GitHub Release
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - name: Check code style and common bugs
+        run: ruff check .
+      - name: Check formatting
+        run: ruff format --check .
+
+  test:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package with dev dependencies
+        run: pip install -e ".[dev]"
+      - name: Run tests with coverage
+        run: pytest --cov=learner_analytics --cov-report=term-missing --cov-report=xml --cov-fail-under=90
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  demo:
+    name: Reproducible demo run
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install .
+      - name: Simulate a course and analyse it
+        run: |
+          learner-analytics simulate --students 200 --seed 0 --out data
+          learner-analytics analyze data/logs.csv --truth data/students.csv --out results
+      - name: Upload results (plots, tables, summary)
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-results
+          path: results/
+
+  build:
+    name: Build package
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - name: Build wheel and source distribution
+        run: python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, demo]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: demo-results
+          path: demo-results
+      - name: Create release with package and demo plots
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*
+            demo-results/*.png
+            demo-results/summary.json
