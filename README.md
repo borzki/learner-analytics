@@ -71,8 +71,8 @@ from learner_analytics import simulate_logs, dropout_risk, engagement_features
 from learner_analytics.bkt import fit_skills, mastery_table
 
 logs, truth = simulate_logs(seed=1)
-models = fit_skills(logs)                 # one BKT model per skill
-mastery = mastery_table(logs, models)     # students x skills
+models = fit_skills(logs)  # one BKT model per skill
+mastery = mastery_table(logs, models)  # students x skills
 risk = dropout_risk(engagement_features(logs))
 print(models["skill_1"].params, risk.sort_values("risk").tail())
 ```
