@@ -53,7 +53,7 @@ jobs:
         run: pytest --cov=learner_analytics --cov-report=term-missing --cov-report=xml --cov-fail-under=90
       - name: Upload coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage.xml
@@ -74,7 +74,7 @@ jobs:
           learner-analytics simulate --students 200 --seed 0 --out data
           learner-analytics analyze data/logs.csv --truth data/students.csv --out results
       - name: Upload results (plots, tables, summary)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: demo-results
           path: results/
@@ -91,7 +91,7 @@ jobs:
       - run: pip install build
       - name: Build wheel and source distribution
         run: python -m build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
