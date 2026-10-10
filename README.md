@@ -125,6 +125,8 @@ pull request:
 5. **Release** (CD) — when a tag such as `v0.1.0` is pushed, the package and demo plots are
    attached to a GitHub Release automatically.
 
+The latest release is available on the [Releases page](https://github.com/borzki/learner-analytics/releases).
+
 ## Data protection
 
 The tool works only with pseudonymised identifiers and never needs names or contact details.
