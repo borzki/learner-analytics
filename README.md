@@ -125,7 +125,31 @@ pull request:
 5. **Release** (CD) — when a tag such as `v0.1.0` is pushed, the package and demo plots are
    attached to a GitHub Release automatically.
 
+6. **Docker** — builds the test image, runs the tests inside it, builds the runtime image and
+   checks that the staging report server starts.
+
 The latest release is available on the [Releases page](https://github.com/borzki/learner-analytics/releases).
+
+## Docker
+
+```bash
+docker build --target runtime -t learner-analytics .
+docker run --rm learner-analytics --version
+docker run -d -p 8501:8000 --entrypoint serve-report learner-analytics   # http://localhost:8501
+```
+
+The image has three stages: `test` (package, dev tools and tests), `build` (wheel) and
+`runtime` (installed package only, non-root user). `serve-report` simulates a course,
+analyses it and serves the plots and summary as a small web page.
+
+## Jenkins pipeline
+
+The [`Jenkinsfile`](Jenkinsfile) defines the same CI/CD process for a self-hosted Jenkins
+server: build the test image → lint → unit tests (JUnit report) → build the runtime image →
+smoke test → push to Docker Hub (optional) → deploy to staging → verify the deployment.
+Jenkins polls the repository every two minutes, so every commit is built. A ready-made local
+Jenkins server is in [`jenkins/`](jenkins/); the setup is described in
+[docs/jenkins.md](docs/jenkins.md). Kubernetes manifests for Minikube are in [`k8s/`](k8s/).
 
 ## Data protection
 

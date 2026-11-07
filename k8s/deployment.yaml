@@ -1,0 +1,40 @@
+# Optional: run the staging report in Kubernetes (Minikube).
+#   minikube image load learner-analytics:latest
+#   kubectl apply -f k8s/
+#   minikube service learner-analytics-report
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: learner-analytics-report
+  labels:
+    app: learner-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: learner-analytics
+  template:
+    metadata:
+      labels:
+        app: learner-analytics
+    spec:
+      containers:
+        - name: report
+          image: learner-analytics:latest
+          imagePullPolicy: Never
+          command: ["serve-report"]
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi

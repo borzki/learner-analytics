@@ -1,0 +1,19 @@
+# Local Jenkins server for the learner-analytics pipeline.
+#   cd jenkins && docker compose up -d --build   ->  http://localhost:8080
+services:
+  jenkins:
+    build: .
+    image: learner-analytics-jenkins
+    container_name: jenkins
+    # root is needed to use the mounted Docker socket; acceptable for a local lab machine only
+    user: root
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  jenkins_home:

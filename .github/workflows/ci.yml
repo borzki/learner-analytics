@@ -1,6 +1,7 @@
 # CI/CD pipeline for learner-analytics.
 #   CI : every push and pull request -> lint -> tests on 3 OS x 3 Python versions -> build + demo
 #   CD : pushing a version tag (v*) -> the built package is attached to a GitHub Release
+# A Jenkins version of the pipeline with Docker build and staging deployment is in Jenkinsfile.
 name: CI
 
 on:
@@ -95,6 +96,25 @@ jobs:
         with:
           name: dist
           path: dist/
+
+  docker:
+    name: Docker image (test, build, smoke test)
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the tests inside the test image
+        run: |
+          docker build --target test -t learner-analytics:test .
+          docker run --rm learner-analytics:test
+      - name: Build the runtime image
+        run: docker build --target runtime -t learner-analytics:ci .
+      - name: Smoke test the image
+        run: |
+          docker run --rm learner-analytics:ci --version
+          docker run -d --name staging -p 8501:8000 --entrypoint serve-report learner-analytics:ci
+          for i in $(seq 1 30); do curl -fsS http://localhost:8501/summary.json && exit 0; sleep 2; done
+          docker logs staging; exit 1
 
   release:
     name: Publish GitHub Release

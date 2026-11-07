@@ -16,6 +16,7 @@ htmlcov/
 
 # Generated outputs
 results/
+reports/
 *.csv
 !tests/data/*.csv
 

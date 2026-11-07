@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Multi-stage `Dockerfile` (test, build and runtime images) and `.dockerignore`.
+- `Jenkinsfile`: lint, unit tests with JUnit report, image build, smoke test,
+  optional push to Docker Hub and automatic deployment to a staging container.
+- Local Jenkins server definition in `jenkins/` (Docker Compose, Docker CLI, plugins).
+- Staging report server (`serve-report`) and optional Kubernetes manifests in `k8s/`.
+- Docker job in the GitHub Actions workflow.
+
 ## [0.1.0] - 2026-10-10
 
 ### Added
